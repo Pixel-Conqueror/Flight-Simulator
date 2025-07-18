@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      - CELERY_BROKER_URL=${REDIS_URL}
+      - CELERY_RESULT_BACKEND=${REDIS_URL}
+      - MONGO_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB}
+    ports:
+      - "5000:5000"
+
+  worker:
+    build: ./backend
+    env_file: .env
+    command: celery -A app.tasks worker --loglevel=info
+    depends_on:
+      - redis
+      - mongo
+
+  frontend:
+    build: ./frontend
+    env_file: .env
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  mongo:
+    image: mongo:7
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DB}
+    ports:
+      - "27017:27017"
+
+  flower:
+    image: mher/flower
+    command: ["flower", "--broker=${REDIS_URL}"]
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
