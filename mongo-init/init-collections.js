@@ -1,7 +1,7 @@
 var dbName = "flight_simulator";
 var mydb = db.getSiblingDB(dbName);
 
-var collections = ["USERS"];
+var collections = ["USERS", "TOKENS"];
 
 for (var i = 0; i < collections.length; i++) {
   var name = collections[i];
