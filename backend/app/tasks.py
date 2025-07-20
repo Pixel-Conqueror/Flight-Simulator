@@ -14,7 +14,6 @@ celery_app = Celery("worker", broker=broker_url, backend=backend_url)
 
 @celery_app.task(name="opensky_auth")
 def opensky_auth():
-    """Retrieve and store OpenSky token."""
     try:
         token = opensky_get_token()
         logger.info("opensky_auth task completed")
@@ -26,7 +25,6 @@ def opensky_auth():
 
 @celery_app.task(name="opensky_datas")
 def opensky_datas():
-    """Fetch latest OpenSky states and store them in MongoDB."""
     try:
         states = get_opensky_datas()
         if states is not None:
