@@ -1,7 +1,13 @@
-from fastapi import FastAPI  # type: ignore
+from fastapi import FastAPI, HTTPException  # type: ignore
 from pymongo.errors import PyMongoError  # type: ignore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore
 from .tasks import celery_app, opensky_auth, opensky_datas
+from .controller.state_controller import (
+    collection_state_liste,
+    live_state_index,
+    historical_state_index,
+    flights_meta_index,
+)
 from .service.opensky_get_token import opensky_get_token
 from . import db, logger
 from .config import settings
@@ -64,3 +70,23 @@ async def health():
         pass
 
     return {"ok": all(status.values()), "services": status}
+
+
+@app.get("/api/state_liste")
+async def api_state_liste(collection: str):
+    return await collection_state_liste(collection)
+
+
+@app.get("/api/live_state")
+async def api_live_state(icao24: str | None = None, page: int = 1):
+    return await live_state_index(icao24, page)
+
+
+@app.get("/api/historical_state")
+async def api_historical_state(icao24: str | None = None, page: int = 1):
+    return await historical_state_index(icao24, page)
+
+
+@app.get("/api/flights_meta")
+async def api_flights_meta(icao24: str | None = None, page: int = 1):
+    return await flights_meta_index(icao24, page)
