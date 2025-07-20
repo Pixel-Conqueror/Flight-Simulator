@@ -1,7 +1,9 @@
 from celery import Celery  # type: ignore
 import os
 
-from .service.opensky import opensky_get_token
+from .service.opensky_get_token import opensky_get_token
+from .service.opensky_get_datas import get_opensky_datas
+from .service.opensky_store_datas import store_opensky_datas
 from . import logger
 
 broker_url = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
@@ -19,4 +21,17 @@ def opensky_auth():
         return {"token": token}
     except Exception as exc:
         logger.error(f"opensky_auth task failed: {exc}")
+        raise
+
+
+@celery_app.task(name="opensky_datas")
+def opensky_datas():
+    """Fetch latest OpenSky states and store them in MongoDB."""
+    try:
+        states = get_opensky_datas()
+        if states is not None:
+            store_opensky_datas(states)
+        logger.info("opensky_datas task completed")
+    except Exception as exc:
+        logger.error(f"opensky_datas task failed: {exc}")
         raise
