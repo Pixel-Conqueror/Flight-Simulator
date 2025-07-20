@@ -8,13 +8,11 @@ from .config import settings
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 
 app = FastAPI()
-# Scheduler instance for periodic tasks
 scheduler = AsyncIOScheduler()
 
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    """Actions to run on application startup."""
     try:
         opensky_get_token()
     except Exception as exc:
@@ -27,7 +25,6 @@ async def startup_event() -> None:
 
 @app.on_event("shutdown")
 async def shutdown_event() -> None:
-    """Cleanup on application shutdown."""
     scheduler.shutdown()
 
 app.add_middleware(

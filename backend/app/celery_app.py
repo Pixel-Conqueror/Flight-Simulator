@@ -11,5 +11,4 @@ celery = Celery(
     backend=redis_url,
 )
 
-# Indique à Celery de charger les tâches définies dans app.tasks
 celery.autodiscover_tasks(["app.tasks"])
