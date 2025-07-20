@@ -25,6 +25,8 @@ def opensky_get_token() -> str | None:
             {"$set": {"token": token}},
             upsert=True,
         )
+        doc = db["TOKENS"].find_one({"name": "opensky_token"})
+        logger.info(f"📄 DB token doc found: {doc}")
         logger.info("OpenSky token stored or updated successfully")
         return token
     except Exception as exc:

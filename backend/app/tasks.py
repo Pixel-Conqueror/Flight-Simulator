@@ -1,4 +1,4 @@
-from celery import Celery
+from celery import Celery  # type: ignore
 import os
 
 from .service.opensky import opensky_get_token

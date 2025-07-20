@@ -48,7 +48,7 @@ async def health():
     return {"ok": all(status.values()), "services": status}
 
 
-@app.post("/auth")
+@app.get("/auth")
 async def manual_auth():
     """Manually trigger the OpenSky authentication task."""
     task = opensky_auth.delay()
