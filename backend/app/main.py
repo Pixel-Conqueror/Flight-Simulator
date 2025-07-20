@@ -72,7 +72,7 @@ async def health():
     return {"ok": all(status.values()), "services": status}
 
 
-@app.get("/api/state_liste")
+@app.get("/api/state_list")
 async def api_state_liste(collection: str):
     return await collection_state_liste(collection)
 
