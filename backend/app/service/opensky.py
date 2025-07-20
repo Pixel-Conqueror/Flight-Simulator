@@ -1,6 +1,6 @@
 from ..config import settings
 from .. import db, logger
-import httpx
+import httpx  # type: ignore
 
 OPENSKY_TOKEN_URL = "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
 

@@ -16,7 +16,7 @@ services:
     container_name: fs-worker
     build: ./backend
     env_file: .env
-    command: celery -A app.tasks worker --loglevel=info
+    command: celery -A app.tasks worker --loglevel=info -E
     depends_on:
       - redis
       - mongo

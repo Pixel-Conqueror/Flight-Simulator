@@ -20,11 +20,3 @@ def opensky_auth():
     except Exception as exc:
         logger.error(f"opensky_auth task failed: {exc}")
         raise
-
-
-celery_app.conf.beat_schedule = {
-    "opensky-auth-every-29-minutes": {
-        "task": "app.tasks.opensky_auth",
-        "schedule": 29 * 60,
-    }
-}
