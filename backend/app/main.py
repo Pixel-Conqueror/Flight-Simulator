@@ -1,11 +1,22 @@
+import asyncio
 from fastapi import FastAPI  # type: ignore
 from pymongo.errors import PyMongoError  # type: ignore
-from .tasks import celery_app
+from .tasks import celery_app, opensky_auth
 from . import db, logger
 from .config import settings
-import httpx  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 
 app = FastAPI()
+scheduler_task = None
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 
 @app.get("/")
@@ -27,7 +38,6 @@ async def health():
     except Exception as e:
         logger.exception("🚨 Unexpected error during Mongo ping")
 
-    # CELERY
     try:
         res = celery_app.control.ping(timeout=3)
         if res:
