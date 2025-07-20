@@ -1,8 +1,9 @@
-from fastapi import HTTPException
+from fastapi import HTTPException  # type: ignore
 from bson import ObjectId  # type: ignore
 from .. import db
 
 PAGE_SIZE = 100
+
 
 async def collection_state_liste(collection: str):
     collection = collection.lower()
@@ -16,6 +17,7 @@ async def collection_state_liste(collection: str):
         return [doc.get("_id") for doc in cursor]
     else:
         raise HTTPException(status_code=400, detail="Invalid collection")
+
 
 async def live_state_index(icao24: str | None, page: int = 1):
     if icao24:
@@ -36,6 +38,7 @@ async def live_state_index(icao24: str | None, page: int = 1):
         docs.append(d)
     return docs
 
+
 async def historical_state_index(icao24: str | None, page: int = 1):
     query = {"icao24": icao24} if icao24 else {}
     skip = (page - 1) * PAGE_SIZE
@@ -51,6 +54,7 @@ async def historical_state_index(icao24: str | None, page: int = 1):
             d["_id"] = str(d["_id"])
         docs.append(d)
     return docs
+
 
 async def flights_meta_index(icao24: str | None, page: int = 1):
     if icao24:
