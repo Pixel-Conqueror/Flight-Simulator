@@ -3,6 +3,8 @@ services:
     container_name: fs-backend
     build: ./backend
     env_file: .env
+    volumes:
+      - ./backend:/app
     environment:
       - CELERY_BROKER_URL=${REDIS_URL}
       - CELERY_RESULT_BACKEND=${REDIS_URL}
@@ -40,7 +42,7 @@ services:
 
   mongo:
     container_name: fs-mongo
-    image: mongo:7
+    image: mongo:4
     volumes:
       - mongo_data:/data/db
       - ./mongo-init:/docker-entrypoint-initdb.d:ro

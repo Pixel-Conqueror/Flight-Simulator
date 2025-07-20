@@ -1,52 +1,33 @@
-from fastapi import FastAPI
-import os
-from pymongo import MongoClient
-import httpx
-from .tasks import add, celery_app
+from fastapi import FastAPI  # type: ignore
+from pymongo.errors import PyMongoError  # type: ignore
+from .tasks import celery_app
+from . import db, logger
+from .config import settings
+import httpx  # type: ignore
 
 app = FastAPI()
 
+
 @app.get("/")
 async def root():
-    result = add.delay(1, 2)
-    return {"message": "Hello, World!", "task_id": result.id}
+    return {"message": "Hello, World!"}
 
 
 @app.get("/health")
 async def health():
-    status = {"flower": False, "mongo": False, "worker": False}
-
-    flower_user = os.getenv("FLOWER_USER")
-    flower_password = os.getenv("FLOWER_PASSWORD")
-    flower_url = os.getenv("FLOWER_URL", "http://flower:5555/flower/api/workers")
+    status = {"mongo": False, "worker": False}
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                flower_url,
-                auth=(flower_user, flower_password),
-                timeout=3,
-            )
-            if resp.status_code == 200:
-                status["flower"] = True
-    except Exception:
-        pass
-
-    mongo_uri = os.getenv(
-        "MONGO_URI", "mongodb://flightsimulator:flightpassword@mongo:27017"
-    )
-    try:
-        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
-        client.admin.command("ping")
+        logger.info("⏳ Attempting MongoDB ping...")
+        result = db.command("ping")
+        logger.info("✅ MongoDB ping successful")
         status["mongo"] = True
-    except Exception:
-        pass
-    finally:
-        try:
-            client.close()
-        except Exception:
-            pass
+    except PyMongoError as e:
+        logger.error(f"❌ PyMongoError during ping: {e}")
+    except Exception as e:
+        logger.exception("🚨 Unexpected error during Mongo ping")
 
+    # CELERY
     try:
         res = celery_app.control.ping(timeout=3)
         if res:

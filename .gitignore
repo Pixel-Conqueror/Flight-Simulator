@@ -1,1 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.sqlite3
+
+# Environnement virtuel
+.env/
+.venv/
+env/
+venv/
+
+# Fichier de config sensible
 .env
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Docker
+*.pid
+docker-compose.override.yml
+mongo_data/
+redis_data/
+
+# Frontend (si tu as un React/Vite)
+node_modules/
+dist/
