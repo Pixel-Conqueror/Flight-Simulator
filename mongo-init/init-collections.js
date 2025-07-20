@@ -1,9 +1,6 @@
-// Remplacez "picture_manager" par le nom de votre DB
-var dbName = "picture_manager";
-// Bascule sur la DB (MONGO_INITDB_DATABASE)
+var dbName = "flight_simulator";
 var mydb = db.getSiblingDB(dbName);
 
-// Liste des collections à créer
 var collections = ["USERS"];
 
 for (var i = 0; i < collections.length; i++) {
@@ -15,9 +12,6 @@ for (var i = 0; i < collections.length; i++) {
     print("ℹ️  Collection already exists: " + name);
   }
 }
-
-mydb.TODO.createIndex({ status: 1 });
-mydb.PROCESSING.createIndex({ updatedAt: 1 });
 
 var users = [
   {
