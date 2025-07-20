@@ -1,8 +1,8 @@
 from fastapi import FastAPI  # type: ignore
 from pymongo.errors import PyMongoError  # type: ignore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore
-from .tasks import celery_app, opensky_auth
-from .service.opensky import opensky_get_token
+from .tasks import celery_app, opensky_auth, opensky_datas
+from .service.opensky_get_token import opensky_get_token
 from . import db, logger
 from .config import settings
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore
@@ -21,6 +21,7 @@ async def startup_event() -> None:
         logger.error(f"Failed to retrieve OpenSky token on startup: {exc}")
 
     scheduler.add_job(opensky_auth.delay, "interval", minutes=29)
+    scheduler.add_job(opensky_datas.delay, "interval", seconds=70)
     scheduler.start()
 
 

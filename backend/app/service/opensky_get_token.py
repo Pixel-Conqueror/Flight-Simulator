@@ -2,10 +2,13 @@ from ..config import settings
 from .. import db, logger
 import httpx  # type: ignore
 
-OPENSKY_TOKEN_URL = "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
+OPENSKY_TOKEN_URL = (
+    "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
+)
 
 
 def opensky_get_token() -> str | None:
+    """Retrieve a token from OpenSky and store it in MongoDB."""
     payload = {
         "grant_type": "client_credentials",
         "client_id": settings.opensky_client_id,
@@ -26,7 +29,7 @@ def opensky_get_token() -> str | None:
             upsert=True,
         )
         doc = db["TOKENS"].find_one({"name": "opensky_token"})
-        logger.info(f"📄 DB token doc found: {doc}")
+        logger.info(f"\U0001F4C4 DB token doc found: {doc}")
         logger.info("OpenSky token stored or updated successfully")
         return token
     except Exception as exc:

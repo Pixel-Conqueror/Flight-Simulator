@@ -1,7 +1,13 @@
 var dbName = "flight_simulator";
 var mydb = db.getSiblingDB(dbName);
 
-var collections = ["USERS", "TOKENS"];
+var collections = [
+  "USERS",
+  "TOKENS",
+  "LIVE_STATES",
+  "HISTORICAL_STATES",
+  "FLIGHTS_META",
+];
 
 for (var i = 0; i < collections.length; i++) {
   var name = collections[i];
@@ -12,6 +18,9 @@ for (var i = 0; i < collections.length; i++) {
     print("ℹ️  Collection already exists: " + name);
   }
 }
+
+// Indexes to optimize queries and enforce uniqueness
+mydb.LIVE_STATES.createIndex({ icao24: 1 }, { unique: true });
 
 var users = [
   {
