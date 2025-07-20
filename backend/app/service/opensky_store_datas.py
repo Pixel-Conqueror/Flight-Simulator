@@ -34,7 +34,6 @@ def store_opensky_datas(states: list[dict]) -> None:
             },
             "$setOnInsert": {
                 "first_seen": request_time,
-                "callsigns": [],
             },
         }
         callsign = state.get("callsign")
