@@ -21,6 +21,10 @@ for (var i = 0; i < collections.length; i++) {
 
 // Indexes to optimize queries and enforce uniqueness
 mydb.LIVE_STATES.createIndex({ icao24: 1 }, { unique: true });
+mydb.LIVE_STATES.createIndex({ request_time: 1 });
+mydb.HISTORICAL_STATES.createIndex({ icao24: 1, request_time: 1 });
+mydb.USERS.createIndex({ username: 1 }, { unique: true });
+mydb.TOKENS.createIndex({ name: 1 }, { unique: true });
 
 var users = [
   {
