@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from bson import ObjectId  # type: ignore
 from .. import db
 
 PAGE_SIZE = 100
@@ -21,12 +22,19 @@ async def live_state_index(icao24: str | None, page: int = 1):
         doc = db["LIVE_STATES"].find_one({"icao24": icao24})
         if not doc:
             raise HTTPException(status_code=404, detail="icao24 not found")
+        if "_id" in doc and isinstance(doc["_id"], ObjectId):
+            doc["_id"] = str(doc["_id"])
         return doc
     skip = (page - 1) * PAGE_SIZE
     cursor = (
         db["LIVE_STATES"].find().skip(skip).limit(PAGE_SIZE)
     )
-    return list(cursor)
+    docs = []
+    for d in cursor:
+        if "_id" in d and isinstance(d["_id"], ObjectId):
+            d["_id"] = str(d["_id"])
+        docs.append(d)
+    return docs
 
 async def historical_state_index(icao24: str | None, page: int = 1):
     query = {"icao24": icao24} if icao24 else {}
@@ -37,14 +45,26 @@ async def historical_state_index(icao24: str | None, page: int = 1):
         .skip(skip)
         .limit(PAGE_SIZE)
     )
-    return list(cursor)
+    docs = []
+    for d in cursor:
+        if "_id" in d and isinstance(d["_id"], ObjectId):
+            d["_id"] = str(d["_id"])
+        docs.append(d)
+    return docs
 
 async def flights_meta_index(icao24: str | None, page: int = 1):
     if icao24:
         doc = db["FLIGHTS_META"].find_one({"_id": icao24})
         if not doc:
             raise HTTPException(status_code=404, detail="icao24 not found")
+        if "_id" in doc and isinstance(doc["_id"], ObjectId):
+            doc["_id"] = str(doc["_id"])
         return doc
     skip = (page - 1) * PAGE_SIZE
     cursor = db["FLIGHTS_META"].find().skip(skip).limit(PAGE_SIZE)
-    return list(cursor)
+    docs = []
+    for d in cursor:
+        if "_id" in d and isinstance(d["_id"], ObjectId):
+            d["_id"] = str(d["_id"])
+        docs.append(d)
+    return docs
