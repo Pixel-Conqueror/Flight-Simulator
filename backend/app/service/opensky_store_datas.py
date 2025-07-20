@@ -37,6 +37,9 @@ def store_opensky_datas(states: list[dict]) -> None:
             },
         }
         callsign = state.get("callsign")
+        if isinstance(callsign, str):
+            callsign = callsign.strip()
+            state["callsign"] = callsign
         if callsign:
             update.setdefault("$addToSet", {})["callsigns"] = callsign
             update["$set"]["last_known_callsign"] = callsign

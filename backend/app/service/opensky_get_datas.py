@@ -49,6 +49,9 @@ def get_opensky_datas() -> list[dict] | None:
 
     def process(state: list) -> dict:
         entry = dict(zip(keys, state))
+        callsign = entry.get("callsign")
+        if isinstance(callsign, str):
+            entry["callsign"] = callsign.strip()
         entry["request_time"] = request_time
         return entry
 
