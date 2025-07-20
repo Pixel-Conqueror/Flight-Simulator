@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field("HS256", env="JWT_ALGORITHM")
     jwt_exp_delta_seconds: int = Field(3600,  env="JWT_EXP_DELTA_SECONDS")
 
+    # OpenSky API
+    opensky_client_id: str = Field(..., env="OPENSKY_CLIENT_ID")
+    opensky_client_secret: str = Field(..., env="OPENSKY_CLIENT_SECRET")
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
