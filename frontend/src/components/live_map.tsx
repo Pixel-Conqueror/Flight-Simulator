@@ -51,7 +51,11 @@ export const LiveMap = () => {
 				/>
 			</SectionHeader>
 
-			<Flex h="calc(100vh - 190px)" w="100%">
+			<Flex
+				h="calc(100vh - 190px)"
+				w="100%"
+				style={{ borderRadius: "var(--mantine-radius-sm)", overflow: "hidden" }}
+			>
 				<MapContainer
 					center={PARIS_COORDINATES}
 					zoom={6}
