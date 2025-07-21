@@ -30,7 +30,7 @@ export const apiClient = {
 	// Flight History - Récupère tout l'historique d'un avion spécifique
 	getFlightHistory: async (icao24: string): Promise<FlightData[]> => {
 		const response = await fetch(
-			`http://localhost:8000/api/historical_state?icao24=${icao24}&limit=100`,
+			`http://localhost:5001/api/historical_state?icao24=${icao24}&limit=100`,
 		);
 		if (!response.ok) {
 			throw new Error("Failed to fetch flight history");
@@ -53,7 +53,7 @@ export const apiClient = {
 	// State List - Récupère la liste des ICAO24 disponibles
 	getStateList: async (collection: string): Promise<string[]> => {
 		const response = await fetch(
-			`http://localhost:8000/api/state_list?collection=${collection}`,
+			`http://localhost:5001/api/state_list?collection=${collection}`,
 		);
 		if (!response.ok) {
 			throw new Error("Failed to fetch state list");
@@ -63,7 +63,7 @@ export const apiClient = {
 
 	// Health Check
 	getHealth: async (): Promise<{ status: string }> => {
-		const response = await fetch("http://localhost:8000/health");
+		const response = await fetch("http://localhost:5001/health");
 		if (!response.ok) {
 			throw new Error("Health check failed");
 		}

@@ -8,6 +8,6 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(levelname)s — %(message)s")
 
 mongo_client = MongoClient(
-    "mongodb://flightsimulator:flightpassword@localhost:27017/flight_simulator?authSource=admin")
+    "mongodb://flightsimulator:flightpassword@mongo:27017/flight_simulator?authSource=admin")
 db = mongo_client.get_default_database()
 logger.info(f"Connected to MongoDB '{db.name}'")

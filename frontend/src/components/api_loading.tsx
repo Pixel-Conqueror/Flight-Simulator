@@ -18,7 +18,7 @@ export const ApiLoading = ({ children }: ApiLoadingProps) => {
 						Checking API connection...
 					</Text>
 					<Text size="sm" c="dimmed">
-						Attempting to connect to http://localhost:8000
+						Attempting to connect to http://localhost:5001
 					</Text>
 				</Stack>
 			</Box>
@@ -42,7 +42,7 @@ export const ApiLoading = ({ children }: ApiLoadingProps) => {
 					>
 						<Text size="sm">
 							The application cannot connect to the API at
-							http://localhost:8000. Please check that the backend server is
+							http://localhost:5001. Please check that the backend server is
 							running.
 						</Text>
 						{error && (
