@@ -1,64 +1,82 @@
-import { useFlightsMeta } from "@/hooks/useApi";
+import { useFlightHistory, useFlightsMeta } from "@/hooks/useApi";
+import { useTableData } from "@/hooks/useTableData";
+import { formatDate, formatTimestamp } from "@/lib/data_utils";
 import type { FlightMeta } from "@/types/api";
-import {
-	Box,
-	Button,
-	Center,
-	Modal,
-	Pagination,
-	Stack,
-	Table,
-	Text,
-	Title,
-} from "@mantine/core";
+import { Box, Table } from "@mantine/core";
 import { useState } from "react";
+import { Icao24Selector } from "./icao24_selector";
+import { ActionButton } from "./ui/action_button";
+import { ErrorState } from "./ui/error_state";
+import { FlightDetailsModal } from "./ui/flight_details_modal";
+import { LoadingState } from "./ui/loading_state";
+import { SectionHeader } from "./ui/section_header";
+import { TableWrapper } from "./ui/table_wrapper";
 
 export const FlightsTable = () => {
-	const [page, setPage] = useState(1);
-	const [selectedFlight, setSelectedFlight] = useState<FlightMeta | null>(null);
-	const { data, isLoading, error } = useFlightsMeta(undefined, page);
+	const [selectedIcao24, setSelectedIcao24] = useState<string | null>(null);
+	const { data, isLoading, error } = useFlightsMeta(
+		selectedIcao24 || undefined,
+		1,
+	);
+
+	const {
+		page,
+		setPage,
+		selectedItem: selectedFlight,
+		setSelectedItem: setSelectedFlight,
+		data: flights,
+		totalPages,
+	} = useTableData<FlightMeta>({ data, isLoading, error });
+
+	const { data: flightHistory } = useFlightHistory(selectedFlight?._id || "");
 
 	if (isLoading) {
-		return <Text>Loading flights metadata...</Text>;
+		return (
+			<LoadingState
+				title="Loading flight metadata..."
+				subtitle="Retrieving flight information"
+			/>
+		);
 	}
 
 	if (error) {
-		return <Text c="red">Error loading flights metadata</Text>;
+		return <ErrorState message="Error loading flights metadata" />;
 	}
-
-	const flights = data || [];
-	const totalPages = 10; // TODO: Implement proper pagination when API supports it
 
 	const rows = flights.map((flight: FlightMeta) => (
 		<Table.Tr key={flight._id}>
 			<Table.Td>{flight.last_known_callsign}</Table.Td>
 			<Table.Td>{flight._id}</Table.Td>
-			<Table.Td>{new Date(flight.first_seen * 1000).toLocaleString()}</Table.Td>
-			<Table.Td>{new Date(flight.last_seen).toLocaleString()}</Table.Td>
+			<Table.Td>{formatTimestamp(flight.first_seen)}</Table.Td>
+			<Table.Td>{formatDate(flight.last_seen)}</Table.Td>
 			<Table.Td>{flight.origin_country}</Table.Td>
 			<Table.Td>{flight.callsigns.join(", ")}</Table.Td>
 			<Table.Td>
-				<Button
-					variant="subtle"
-					size="xs"
-					onClick={() => setSelectedFlight(flight)}
-				>
-					View Details
-				</Button>
+				<ActionButton onClick={() => setSelectedFlight(flight)} />
 			</Table.Td>
 		</Table.Tr>
 	));
 
 	return (
 		<Box>
-			<Title order={2} mb="lg">
-				Flights Metadata
-			</Title>
-			<Text c="dimmed" size="sm" mb="lg">
-				Flight metadata with departure and arrival information
-			</Text>
+			<SectionHeader
+				title="Flights Metadata"
+				subtitle="Flight metadata with departure and arrival information"
+			>
+				<Icao24Selector
+					collection="flights_meta"
+					value={selectedIcao24}
+					onChange={setSelectedIcao24}
+					placeholder="Filter by ICAO24"
+					label="Filter by aircraft"
+				/>
+			</SectionHeader>
 
-			<Table>
+			<TableWrapper
+				totalPages={totalPages}
+				currentPage={page}
+				onPageChange={setPage}
+			>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>Callsign</Table.Th>
@@ -71,45 +89,14 @@ export const FlightsTable = () => {
 					</Table.Tr>
 				</Table.Thead>
 				<Table.Tbody>{rows}</Table.Tbody>
-			</Table>
+			</TableWrapper>
 
-			<Center mt="md">
-				<Pagination total={totalPages} value={page} onChange={setPage} />
-			</Center>
-
-			<Modal
+			<FlightDetailsModal
 				opened={!!selectedFlight}
 				onClose={() => setSelectedFlight(null)}
-				title="Flight Metadata Details"
-				size="md"
-			>
-				{selectedFlight && (
-					<Stack gap="sm">
-						<Text>
-							<strong>Flight ID:</strong> {selectedFlight._id}
-						</Text>
-						<Text>
-							<strong>Last Known Callsign:</strong>{" "}
-							{selectedFlight.last_known_callsign}
-						</Text>
-						<Text>
-							<strong>All Callsigns:</strong>{" "}
-							{selectedFlight.callsigns.join(", ")}
-						</Text>
-						<Text>
-							<strong>First Seen:</strong>{" "}
-							{new Date(selectedFlight.first_seen * 1000).toLocaleString()}
-						</Text>
-						<Text>
-							<strong>Last Seen:</strong>{" "}
-							{new Date(selectedFlight.last_seen).toLocaleString()}
-						</Text>
-						<Text>
-							<strong>Origin Country:</strong> {selectedFlight.origin_country}
-						</Text>
-					</Stack>
-				)}
-			</Modal>
+				flight={selectedFlight}
+				flightHistory={flightHistory}
+			/>
 		</Box>
 	);
 };

@@ -27,6 +27,17 @@ export const apiClient = {
 		return response as FlightData[];
 	},
 
+	// Flight History - Récupère tout l'historique d'un avion spécifique
+	getFlightHistory: async (icao24: string): Promise<FlightData[]> => {
+		const response = await fetch(
+			`http://localhost:8000/api/historical_state?icao24=${icao24}&limit=100`,
+		);
+		if (!response.ok) {
+			throw new Error("Failed to fetch flight history");
+		}
+		return response.json();
+	},
+
 	// Flights Meta
 	getFlightsMeta: async (
 		icao24?: string,
@@ -37,6 +48,17 @@ export const apiClient = {
 			page,
 		);
 		return response as FlightMeta[];
+	},
+
+	// State List - Récupère la liste des ICAO24 disponibles
+	getStateList: async (collection: string): Promise<string[]> => {
+		const response = await fetch(
+			`http://localhost:8000/api/state_list?collection=${collection}`,
+		);
+		if (!response.ok) {
+			throw new Error("Failed to fetch state list");
+		}
+		return response.json();
 	},
 
 	// Health Check

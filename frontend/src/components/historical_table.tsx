@@ -1,65 +1,87 @@
-import { useHistoricalState } from "@/hooks/useApi";
-import type { FlightData } from "@/types/api";
+import { useFlightHistory, useHistoricalState } from "@/hooks/useApi";
+import { useTableData } from "@/hooks/useTableData";
 import {
-	Box,
-	Button,
-	Center,
-	Modal,
-	Pagination,
-	Stack,
-	Table,
-	Text,
-	Title,
-} from "@mantine/core";
+	formatAltitude,
+	formatTimestamp,
+	formatVelocity,
+} from "@/lib/data_utils";
+import type { FlightData } from "@/types/api";
+import { Box, Table } from "@mantine/core";
 import { useState } from "react";
+import { Icao24Selector } from "./icao24_selector";
+import { ActionButton } from "./ui/action_button";
+import { ErrorState } from "./ui/error_state";
+import { FlightDetailsModal } from "./ui/flight_details_modal";
+import { LoadingState } from "./ui/loading_state";
+import { SectionHeader } from "./ui/section_header";
+import { TableWrapper } from "./ui/table_wrapper";
 
 export const HistoricalTable = () => {
-	const [page, setPage] = useState(1);
-	const [selectedFlight, setSelectedFlight] = useState<FlightData | null>(null);
-	const { data, isLoading, error } = useHistoricalState(undefined, page);
+	const [selectedIcao24, setSelectedIcao24] = useState<string | null>(null);
+	const { data, isLoading, error } = useHistoricalState(
+		selectedIcao24 || undefined,
+		1,
+	);
+
+	const {
+		page,
+		setPage,
+		selectedItem: selectedFlight,
+		setSelectedItem: setSelectedFlight,
+		data: flights,
+		totalPages,
+	} = useTableData<FlightData>({ data, isLoading, error });
+
+	const { data: flightHistory, isLoading: historyLoading } = useFlightHistory(
+		selectedFlight?.icao24 || "",
+	);
 
 	if (isLoading) {
-		return <Text>Loading historical data...</Text>;
+		return (
+			<LoadingState
+				title="Loading historical data..."
+				subtitle="Retrieving flight records"
+			/>
+		);
 	}
 
 	if (error) {
-		return <Text c="red">Error loading historical data</Text>;
+		return <ErrorState message="Error loading historical data" />;
 	}
-
-	const flights = data || [];
-	const totalPages = 10; // TODO: Implement proper pagination when API supports it
 
 	const rows = flights.map((flight: FlightData) => (
 		<Table.Tr key={flight._id}>
 			<Table.Td>{flight.callsign}</Table.Td>
 			<Table.Td>{flight.icao24}</Table.Td>
+			<Table.Td>{formatTimestamp(flight.time_position)}</Table.Td>
+			<Table.Td>{formatAltitude(flight.baro_altitude)}</Table.Td>
+			<Table.Td>{formatVelocity(flight.velocity)}</Table.Td>
 			<Table.Td>
-				{new Date(flight.time_position * 1000).toLocaleString()}
-			</Table.Td>
-			<Table.Td>{flight.baro_altitude} ft</Table.Td>
-			<Table.Td>{flight.velocity} m/s</Table.Td>
-			<Table.Td>
-				<Button
-					variant="subtle"
-					size="xs"
-					onClick={() => setSelectedFlight(flight)}
-				>
-					View Details
-				</Button>
+				<ActionButton onClick={() => setSelectedFlight(flight)} />
 			</Table.Td>
 		</Table.Tr>
 	));
 
 	return (
 		<Box>
-			<Title order={2} mb="lg">
-				Historical Flight Data
-			</Title>
-			<Text c="dimmed" size="sm" mb="lg">
-				Browse historical flight records with pagination
-			</Text>
+			<SectionHeader
+				title="Historical Flight Data"
+				subtitle="Browse historical flight records with pagination"
+			>
+				<Icao24Selector
+					collection="historical_state"
+					value={selectedIcao24}
+					onChange={setSelectedIcao24}
+					placeholder="Filter by ICAO24"
+					label="Filter by aircraft"
+				/>
+			</SectionHeader>
 
-			<Table>
+			<TableWrapper
+				totalPages={totalPages}
+				currentPage={page}
+				onPageChange={setPage}
+			>
 				<Table.Thead>
 					<Table.Tr>
 						<Table.Th>Callsign</Table.Th>
@@ -71,67 +93,15 @@ export const HistoricalTable = () => {
 					</Table.Tr>
 				</Table.Thead>
 				<Table.Tbody>{rows}</Table.Tbody>
-			</Table>
+			</TableWrapper>
 
-			<Center mt="md">
-				<Pagination total={totalPages} value={page} onChange={setPage} />
-			</Center>
-
-			<Modal
+			<FlightDetailsModal
 				opened={!!selectedFlight}
 				onClose={() => setSelectedFlight(null)}
-				title="Flight Details"
-				size="md"
-			>
-				{selectedFlight && (
-					<Stack gap="sm">
-						<Text>
-							<strong>Callsign:</strong> {selectedFlight.callsign}
-						</Text>
-						<Text>
-							<strong>ICAO24:</strong> {selectedFlight.icao24}
-						</Text>
-						<Text>
-							<strong>Timestamp:</strong>{" "}
-							{new Date(selectedFlight.time_position * 1000).toLocaleString()}
-						</Text>
-						<Text>
-							<strong>Latitude:</strong> {selectedFlight.latitude}°
-						</Text>
-						<Text>
-							<strong>Longitude:</strong> {selectedFlight.longitude}°
-						</Text>
-						<Text>
-							<strong>Baro Altitude:</strong> {selectedFlight.baro_altitude} ft
-						</Text>
-						<Text>
-							<strong>Geo Altitude:</strong> {selectedFlight.geo_altitude} ft
-						</Text>
-						<Text>
-							<strong>Velocity:</strong> {selectedFlight.velocity} m/s
-						</Text>
-						<Text>
-							<strong>Heading:</strong> {selectedFlight.heading}°
-						</Text>
-						<Text>
-							<strong>Vertical Rate:</strong> {selectedFlight.vertical_rate} m/s
-						</Text>
-						<Text>
-							<strong>On Ground:</strong>{" "}
-							{selectedFlight.on_ground ? "Yes" : "No"}
-						</Text>
-						<Text>
-							<strong>Squawk:</strong> {selectedFlight.squawk}
-						</Text>
-						<Text>
-							<strong>Origin Country:</strong> {selectedFlight.origin_country}
-						</Text>
-						<Text>
-							<strong>SPI:</strong> {selectedFlight.spi ? "Yes" : "No"}
-						</Text>
-					</Stack>
-				)}
-			</Modal>
+				flight={selectedFlight}
+				flightHistory={flightHistory}
+				historyLoading={historyLoading}
+			/>
 		</Box>
 	);
 };

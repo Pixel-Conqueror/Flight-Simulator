@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
+import { ApiProvider } from "./contexts/api_context";
 import { router } from "./routes";
 
 const queryClient = new QueryClient({
@@ -18,7 +19,9 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById("root")!).render(
 	<QueryClientProvider client={queryClient}>
 		<MantineProvider>
-			<RouterProvider router={router} />
+			<ApiProvider>
+				<RouterProvider router={router} />
+			</ApiProvider>
 		</MantineProvider>
 		<ReactQueryDevtools initialIsOpen={false} />
 	</QueryClientProvider>,

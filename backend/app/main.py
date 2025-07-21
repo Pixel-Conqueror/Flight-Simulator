@@ -55,17 +55,24 @@ async def health():
     try:
         logger.info("⏳ Attempting MongoDB ping...")
         result = db.command("ping")
-        logger.info("✅ MongoDB ping successful")
-        status["mongo"] = True
+        if result:
+            logger.info("✅ MongoDB ping successful")
+            status["mongo"] = True
+        else:
+            logger.error("❌ MongoDB ping failed")
     except PyMongoError as e:
         logger.error(f"❌ PyMongoError during ping: {e}")
     except Exception as e:
         logger.exception("🚨 Unexpected error during Mongo ping")
 
     try:
+        logger.info("⏳ Attempting Celery ping...")
         res = celery_app.control.ping(timeout=3)
         if res:
+            logger.info("✅ Celery ping successful")
             status["worker"] = True
+        else:
+            logger.error("❌ Celery ping failed")
     except Exception:
         pass
 

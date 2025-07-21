@@ -1,45 +1,67 @@
 import { useLiveState } from "@/hooks/useApi";
+import { normalizeData } from "@/lib/data_utils";
+import "@/styles/leaflet-overrides.css";
 import type { FlightData } from "@/types/api";
-import { Box, Stack, Text, Title } from "@mantine/core";
+import { Flex, List } from "@mantine/core";
 import "leaflet/dist/leaflet.css";
+import { useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { Icao24Selector } from "./icao24_selector";
 import { createPlaneIcon } from "./plane_icon";
+import { ErrorState } from "./ui/error_state";
+import { LoadingState } from "./ui/loading_state";
+import { SectionHeader } from "./ui/section_header";
+
+const PARIS_COORDINATES = [48.8566, 2.3522] as [number, number];
 
 export const LiveMap = () => {
-	const { data, isLoading, error } = useLiveState(undefined, 1);
-	console.log(data);
+	const [selectedIcao24, setSelectedIcao24] = useState<string | null>(null);
+	const { data, isLoading, error } = useLiveState(
+		selectedIcao24 || undefined,
+		1,
+	);
 
 	if (isLoading) {
-		return <Text>Loading live flight data...</Text>;
+		return (
+			<LoadingState
+				title="Loading real-time flight data..."
+				subtitle="Retrieving current aircraft positions"
+			/>
+		);
 	}
 
 	if (error) {
-		return <Text c="red">Error loading live flight data</Text>;
+		return <ErrorState message="Error loading live flight data" />;
 	}
 
-	const flights = data || [];
+	const flights = normalizeData(data);
 
 	return (
-		<Box>
-			<Title order={2} mb="lg">
-				Live Flight Tracking
-			</Title>
-			<Text c="dimmed" size="sm" mb="lg">
-				Real-time flight positions on the map
-			</Text>
+		<>
+			<SectionHeader
+				title="Live Flight Tracking"
+				subtitle="Real-time flight positions on the map"
+			>
+				<Icao24Selector
+					collection="live_state"
+					value={selectedIcao24}
+					onChange={setSelectedIcao24}
+					placeholder="Filter by ICAO24"
+					label="Filter by aircraft"
+				/>
+			</SectionHeader>
 
-			<Box h={500} w="100%">
+			<Flex h="calc(100vh - 190px)" w="100%">
 				<MapContainer
-					center={[48.8566, 2.3522]} // Paris coordinates
+					center={PARIS_COORDINATES}
 					zoom={6}
-					style={{ height: "100%", width: "100%" }}
+					style={{ width: "100%", flex: 1 }}
 				>
 					<TileLayer
 						url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 						attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 					/>
 					{flights.map((flight: FlightData) => {
-						// Créer une icône d'avion orientée selon le cap de l'avion
 						const planeIcon = createPlaneIcon(flight.heading);
 
 						return (
@@ -49,21 +71,21 @@ export const LiveMap = () => {
 								icon={planeIcon}
 							>
 								<Popup>
-									<Stack gap="xs">
-										<Text fw={700}>{flight.callsign}</Text>
-										<Text size="sm">ICAO24: {flight.icao24}</Text>
-										<Text size="sm">Altitude: {flight.baro_altitude} ft</Text>
-										<Text size="sm">Velocity: {flight.velocity} m/s</Text>
-										<Text size="sm">Heading: {flight.heading}°</Text>
-										<Text size="sm">Country: {flight.origin_country}</Text>
-										<Text size="sm">Squawk: {flight.squawk}</Text>
-									</Stack>
+									<List w="200px">
+										<List.Item>ICAO24: {flight.icao24}</List.Item>
+										<List.Item>Callsign: {flight.callsign}</List.Item>
+										<List.Item>Altitude: {flight.baro_altitude} ft</List.Item>
+										<List.Item>Velocity: {flight.velocity} m/s</List.Item>
+										<List.Item>Heading: {flight.heading}°</List.Item>
+										<List.Item>Country: {flight.origin_country}</List.Item>
+										<List.Item>Squawk: {flight.squawk}</List.Item>
+									</List>
 								</Popup>
 							</Marker>
 						);
 					})}
 				</MapContainer>
-			</Box>
-		</Box>
+			</Flex>
+		</>
 	);
 };

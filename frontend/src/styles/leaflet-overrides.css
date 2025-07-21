@@ -1,0 +1,25 @@
+/* Override Leaflet z-index to prevent dropdown issues */
+.leaflet-container {
+	z-index: 1 !important;
+}
+
+.leaflet-pane {
+	z-index: 1 !important;
+}
+
+.leaflet-control {
+	z-index: 2 !important;
+}
+
+.leaflet-popup {
+	z-index: 3 !important;
+}
+
+/* Ensure Mantine dropdowns appear above Leaflet */
+.mantine-Select-dropdown {
+	z-index: 1000 !important;
+}
+
+.mantine-Select-item {
+	z-index: 1000 !important;
+}

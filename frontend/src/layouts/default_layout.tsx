@@ -1,3 +1,4 @@
+import { ApiLoading } from "@/components/api_loading";
 import { HealthBadge } from "@/components/health_badge";
 import {
 	AppShell,
@@ -79,9 +80,15 @@ export function DefaultLayout() {
 				</AppShell.Section>
 			</AppShell.Navbar>
 
-			<AppShell.Main>
-				<Container size="xl">
-					<Outlet />
+			<AppShell.Main
+				style={{
+					display: "flex",
+				}}
+			>
+				<Container size="xl" style={{ flex: 1 }}>
+					<ApiLoading>
+						<Outlet />
+					</ApiLoading>
 				</Container>
 			</AppShell.Main>
 		</AppShell>
